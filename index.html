@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>ChromeCast JavaScript SDK</title>
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/simple.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+<header style="position: absolute;top: 50px; left: 30px; z-index:500; color: white; font-size:100px;background-color: rgba(255,255,255,0)"></header>
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>ChromeCast</h1>
+					<h2>JavaScript SDK</h2>
+				</section>
+
+				<section data-background="images/ants.jpg" data-state="header1">
+					<style>.header1 header:after { content: "Simon MacDonald - @macdonst"; }</style>
+				</section>
+
+				<section>
+					<h2>ChromeCast</h2>
+					<img src="images/chromecast.png" align="left"/>
+					<p>
+						Chromecast is a thumb-sized media streaming device that plugs into the HDMI port on your TV. Set it up with a simple mobile app, then send your favourite online shows, movies, music and more to your TV using your smartphone, tablet or laptop.
+					</p>
+				</section>
+
+				<section>
+					<h2>Image Types</h2>
+					<ul>
+						<li>BMP</li>
+						<li>GIF</li>
+						<li>JPEG</li>
+						<li>PNG</li>
+						<li>WEBP</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Video Streaming</h2>
+					<ul>
+						<li>MP4</li>
+						<li>WEBM</li>
+						<li>MPEG-DASH</li>
+						<li>SmoothStreaming</li>
+						<li>HTTP Live Streaming (HLS)</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Audio Decoding</h2>
+					<ul>
+						<li>HE-AAC</li>
+						<li>LC-AAC</li>
+						<li>CELT/Opus</li>
+						<li>MP3</li>
+						<li>Vorbis</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Application Types</h2>
+					<p>Sender Applications</p>
+					<ul>
+						<li>Android</li>
+						<li>iOS</li>
+						<li>Chrome</li>
+					</ul>
+					<br/>
+					<p>Receiver Applications</p>
+					<ul>
+						<li>Default</li>
+						<li>Styled Media Receiver</li>
+						<li>Custom Media Receiver</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Chrome Sender Apps</h2>
+					<ul>
+						<li>Install the <a href="https://www.google.com/intl/en/chrome/browser/">Chrome browser</a></li>
+						<li>Install the <a href="https://chrome.google.com/webstore/detail/google-cast/boadgeojelhgndaghljhdicfkmllpafd">ChromeCast extension</a></li>
+				</section>
+
+				<section>
+					<h2>Add Cast Sender Script</h2>
+					<pre><code data-trim contenteditable>
+
+&lt;script type="text/javascript"
+    src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"&gt;&lt;/script&gt;
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Call API Initialization</h2>
+					<pre><code data-trim contenteditable>
+window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
+  if (loaded) {
+    initializeCastApi();
+  } else {
+    console.log(errorInfo);
+  }
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Initialize the API</h2>
+					<pre><code data-trim contenteditable>
+initializeCastApi = function() {
+  var sessionRequest = new chrome.cast.SessionRequest(
+    chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID);
+  var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
+    sessionListener,
+    receiverListener);
+  chrome.cast.initialize(apiConfig, onInitSuccess, onError);
+};					</code></pre>
+				</section>
+
+				<section>
+					<h2>Device Selection</h2>
+					<pre><code data-trim contenteditable>
+receiverListener = function (e) {
+  if( e === chrome.cast.ReceiverAvailability.AVAILABLE) {
+    console.log("Woohoo!");
+  } else {
+    console.log("Doh!");
+  }
+}					</code></pre>
+				</section>
+
+				<section>
+					<h2>Start App and Save Session</h2>
+					<pre><code data-trim contenteditable>
+startApp = function () {
+  console.log("starting app...");
+  chrome.cast.requestSession(onRequestSessionSuccess, onLaunchError);
+}
+
+onRequestSessionSuccess = function (e) {
+      session = e;
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Load Media</h2>
+					<pre><code data-trim contenteditable>
+var mediaInfo = new chrome.cast.media.MediaInfo(currentMediaURL);
+var request = new chrome.cast.media.LoadRequest(mediaInfo);
+session.loadMedia(request,
+   onMediaDiscovered.bind(this, 'loadMedia'),
+   onMediaError);
+
+function onMediaDiscovered(how, media) {
+   currentMedia = media;
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Media Playback</h2>
+					<ul>
+						<li>PLAY/RESUME: currentMedia.play(null, success, error);</li>
+						<li>PAUSE: currentMedia.pause(null, success, error);</li>
+						<li>STOP: currentMedia.stop(null, success, error);</li>
+						<li>SEEK: currentMedia.seek(null, success, error);</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Stop App</h2>
+					<pre><code data-trim contenteditable>
+stopApp = function () {
+  session.stop(onSuccess, onError);
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Demo</h2>
+					<div style=" margin:10px; float:left; display:block; width:100%;">
+				        <button style="font: bold 24px Arial" onclick="startApp()">Launch app</button>
+				        <button style="font: bold 24px Arial" onclick="stopApp()">Stop app</button>
+				        <br>
+				        <button style="font: bold 24px Arial" onclick="loadMedia('http://commondatastorage.googleapis.com/gtv-videos-bucket/big_buck_bunny_1080p.mp4')">Load media</button>
+				        <button style="font: bold 24px Arial" id="playpauseresume" onclick="playMedia()">Play</button>
+				        <button style="font: bold 24px Arial" onclick="stopMedia()">Stop media</button>
+					<div>
+      			</section>
+
+				<section>
+					<h2>Receiver Applications</h2>
+					<h3>Part 2 Coming Soon!</h3>
+				</section>
+
+				<section>
+					<h1>THE END</h1>
+					<h3>by Simon MacDonald / simonmacdonald.com</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+		<script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+		<script>
+			var currentMedia = null;
+			var session = null;
+
+			window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
+			  if (loaded) {
+			    initializeCastApi();
+			  } else {
+			    console.log(errorInfo);
+			  }
+			}
+
+			initializeCastApi = function() {
+			  var sessionRequest = new chrome.cast.SessionRequest(
+			    chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID);
+			  var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
+			    sessionListener,
+			    receiverListener);
+			  chrome.cast.initialize(apiConfig, onInitSuccess, onError);
+			};
+
+			onInitSuccess = function() {
+				console.log("init success");
+			};
+
+			onError = function() {
+				console.log("init error");
+			};
+
+			receiverListener = function (e) {
+			  if( e === chrome.cast.ReceiverAvailability.AVAILABLE) {
+			    console.log("Woohoo!");
+			  } else {
+			    console.log("Doh!");
+			  }
+			};
+
+			startApp = function () {
+			  console.log("starting app...");
+			  chrome.cast.requestSession(onRequestSessionSuccess, onLaunchError);
+			};
+
+			onRequestSessionSuccess = function (e) {
+			      session = e;
+			};
+
+			onLaunchError = function (e) {
+			      console.log("launch error");
+			};
+
+			stopApp = function () {
+			  session.stop(onSuccess, onError);
+			};
+
+			onSuccess = function() {
+				console.log("stop success");
+			};
+
+			loadMedia = function(mediaURL) {
+			  if (!session) {
+			    console.log("no session");
+			    return;
+			  }
+
+			  var mediaInfo = new chrome.cast.media.MediaInfo(mediaURL);
+			  mediaInfo.contentType = 'video/mp4';
+			  var request = new chrome.cast.media.LoadRequest(mediaInfo);
+			  request.autoplay = true;
+			  request.currentTime = 0;
+
+			  session.loadMedia(request,
+			    onMediaDiscovered.bind(this, 'loadMedia'),
+			    onMediaError);
+
+			};
+
+			function onMediaDiscovered(how, media) {
+			  console.log("new media session ID:" + media.mediaSessionId);
+			  currentMedia = media;
+			  currentMedia.addUpdateListener(onMediaStatusUpdate);
+			}
+
+			function onMediaError(e) {
+			  console.log("media error");
+			}
+
+			function onMediaStatusUpdate(isAlive) {
+				console.log(currentMedia.playerState);
+			}
+
+function playMedia() {
+  if( !currentMedia ) 
+    return;
+
+  var playpauseresume = document.getElementById("playpauseresume");
+  if( playpauseresume.innerHTML == 'Play' ) {
+    currentMedia.play(null,
+      mediaCommandSuccessCallback.bind(this,"playing started for " + currentMedia.sessionId),
+      onError);
+      playpauseresume.innerHTML = 'Pause';
+      console.log("play started");
+  }
+  else {
+    if( playpauseresume.innerHTML == 'Pause' ) {
+      currentMedia.pause(null,
+        mediaCommandSuccessCallback.bind(this,"paused " + currentMedia.sessionId),
+        onError);
+      playpauseresume.innerHTML = 'Resume';
+      console.log("paused");
+    }
+    else {
+      if( playpauseresume.innerHTML == 'Resume' ) {
+        currentMedia.play(null,
+          mediaCommandSuccessCallback.bind(this,"resumed " + currentMedia.sessionId),
+          onError);
+        playpauseresume.innerHTML = 'Pause';
+        console.log("resumed");
+      }
+    }
+  }
+}
+
+function stopMedia() {
+  if( !currentMedia ) 
+    return;
+
+  currentMedia.stop(null,
+    mediaCommandSuccessCallback.bind(this,"stopped " + currentMedia.sessionId),
+    onError);
+  var playpauseresume = document.getElementById("playpauseresume");
+  playpauseresume.innerHTML = 'Play';
+  console.log("media stopped");
+}			
+
+function sessionListener(e) {
+  console.log('New session ID: ' + e.sessionId);
+  session = e;
+  if (session.media.length != 0) {
+    console.log(
+        'Found ' + session.media.length + ' existing media sessions.');
+    onMediaDiscovered('sessionListener', session.media[0]);
+  }
+  session.addMediaListener(
+    onMediaDiscovered.bind(this, 'addMediaListener'));
+  session.addUpdateListener(sessionUpdateListener.bind(this));  
+}
+
+function sessionUpdateListener(isAlive) {
+  var message = isAlive ? 'Session Updated' : 'Session Removed';
+  message += ': ' + session.sessionId;
+  console.log(message);
+  if (!isAlive) {
+    var playpauseresume = document.getElementById("playpauseresume");
+    playpauseresume.innerHTML = 'Play';
+  } else {
+      playpauseresume.innerHTML = 'Pause';
+  }
+};
+
+function mediaCommandSuccessCallback(info) {
+  console.log(info);
+}
+
+		</script>
+	</body>
+</html>
